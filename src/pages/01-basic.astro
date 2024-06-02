@@ -1,0 +1,25 @@
+---
+import { v2 as cloudinary } from 'cloudinary';
+import { Image } from '@unpic/astro';
+import Layout from '../layouts/default.astro';
+
+cloudinary.config({
+	cloud_name: import.meta.env.CLOUDINARY_CLOUD_NAME,
+	api_key: import.meta.env.CLOUDINARY_API_KEY,
+	api_secret: import.meta.env.CLOUDINARY_API_SECRET,
+});
+
+const banner = cloudinary.url('cloudinary-images/tagging-test.jpg');
+---
+
+<Layout>
+	<h1>01. Basic</h1>
+
+	<Image
+		src={banner}
+		alt="Jason Lengstorf at his desk. He’s holding up the peace sign."
+		width={1200}
+		height={675}
+		class="banner"
+	/>
+</Layout>

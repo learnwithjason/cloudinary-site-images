@@ -1,0 +1,77 @@
+---
+import { v2 as cloudinary, type TransformationOptions } from 'cloudinary';
+import { Image } from '@unpic/astro';
+import Layout from '../layouts/default.astro';
+
+cloudinary.config({
+	cloud_name: import.meta.env.CLOUDINARY_CLOUD_NAME,
+	api_key: import.meta.env.CLOUDINARY_API_KEY,
+	api_secret: import.meta.env.CLOUDINARY_API_SECRET,
+});
+
+const public_id = 'cloudinary-images/tagging-test.jpg';
+const alt = 'Jason Lengstorf at his desk. He’s holding up the peace sign.';
+
+const base_transformation: TransformationOptions = {
+	quality: 'auto',
+	format: 'auto',
+};
+
+const thumb = cloudinary.url(public_id, {
+	transformation: [
+		base_transformation,
+		{ crop: 'thumb', gravity: 'face:auto', zoom: 0.6 },
+	],
+});
+
+const portrait = cloudinary.url(public_id, {
+	transformation: [base_transformation, { crop: 'fill', gravity: 'face:auto' }],
+});
+
+const lamp = cloudinary.url(public_id, {
+	transformation: [
+		base_transformation,
+		{ aspect_ratio: 1, width: 400, crop: 'auto', gravity: 'auto:lamp' },
+	],
+	sign_url: true,
+});
+---
+
+<Layout>
+	<h1>02. Smart Cropping</h1>
+
+	<div class="gallery">
+		<div class="example">
+			<h3>Thumb</h3>
+			<Image src={thumb} alt={alt} width={400} aspectRatio={1} class="thumb" />
+			<pre><code>crop: 'thumb',
+gravity: 'face:auto'</code></pre>
+		</div>
+
+		<div class="example">
+			<h3>Portrait</h3>
+			<Image
+				src={portrait}
+				alt={alt}
+				width={300}
+				height={400}
+				class="portrait"
+			/>
+			<pre><code>crop: 'fill',
+gravity: 'face:auto'</code></pre>
+		</div>
+
+		<div class="example">
+			<h3>Smart Crop</h3>
+			<img src={lamp} alt={alt} class="thumb" />
+			<pre><code>crop: 'auto',
+gravity: 'auto:lamp'</code></pre>
+		</div>
+	</div>
+</Layout>
+
+<style>
+	.gallery {
+		grid-template-columns: repeat(3, minmax(0, 1fr));
+	}
+</style>

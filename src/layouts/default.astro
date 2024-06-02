@@ -1,0 +1,231 @@
+---
+const url = new URL(Astro.url);
+const nav = [
+	{
+		label: 'Basic',
+		path: '/01-basic',
+	},
+	{
+		label: 'Smart Cropping',
+		path: '/02-smart-cropping',
+	},
+	{
+		label: 'Image Overlays',
+		path: '/03-image-overlays',
+	},
+	{
+		label: 'User Uploads',
+		path: '/04-user-uploads',
+	},
+	{
+		label: 'Moderation',
+		path: '/05-moderation',
+	},
+];
+---
+
+<html lang="en">
+	<head>
+		<meta charset="utf-8" />
+		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+		<meta name="viewport" content="width=device-width" />
+		<meta name="generator" content={Astro.generator} />
+		<title>Using Cloudinary for Site Images</title>
+	</head>
+	<body>
+		<header>
+			<a rel="home" href="/">Site Images w/Cloudinary</a>
+			<nav>
+				{
+					nav.map(({ label, path }) => (
+						<a href={path} class:list={{ current: url.pathname === path }}>
+							{label}
+						</a>
+					))
+				}
+			</nav>
+		</header>
+		<main>
+			<slot />
+		</main>
+		<footer>
+			<a href="https://lwj.dev">a Learn With Jason project</a>
+			<a href="https://github.com/learnwtihjason/cloudinary-site-images"
+				>source code</a
+			>
+			<a href="https://cloudinary.com">Cloudinary</a>
+		</footer>
+	</body>
+</html>
+
+<style>
+	:root {
+		--gray-000: oklch(98.85% 0 71.47 / 1);
+		--gray-900: oklch(9.33% 0 83.12 / 1);
+		--blue-400: oklch(66.03% 0.192 259.53 / 1);
+		--blue-600: oklch(47.21% 0.229 259.53 / 1);
+		--orange-600: oklch(63.09% 0.15 71.47 / 1);
+		--bg: light-dark(var(--gray-000), var(--gray-900));
+		--fg: light-dark(var(--gray-900), var(--gray-000));
+		--link: light-dark(var(--blue-600), var(--blue-400));
+
+		background: var(--bg);
+		color: var(--fg);
+		color-scheme: light dark;
+		font-family:
+			system-ui,
+			-apple-system,
+			sans-serif;
+		font-size: 18px;
+		line-height: 1.45;
+	}
+
+	* {
+		box-sizing: border-box;
+	}
+
+	a {
+		color: var(--link);
+	}
+
+	body {
+		display: flex;
+		flex-direction: column;
+		margin: 0;
+		min-height: 100dvh;
+	}
+
+	:is(header, main, footer) {
+		margin: 0;
+		padding: 1rem max(2rem, 5cqw);
+	}
+
+	header {
+		display: flex;
+		justify-content: space-between;
+
+		& nav {
+			display: flex;
+			gap: 0.5rem;
+		}
+
+		& a {
+			border-radius: 0.5rem;
+			color: var(--orange-600);
+			display: inline-block;
+			font-weight: 600;
+			margin: 0;
+			padding: 0.25rem 0.75rem;
+			text-decoration: none;
+			transition: background-color 150ms linear;
+
+			&:is(:focus, :hover) {
+				background-color: color-mix(
+					in oklch,
+					var(--orange-600),
+					transparent 90%
+				);
+			}
+
+			&.current {
+				background-color: var(--orange-600);
+				color: var(--bg);
+				text-decoration: none;
+			}
+		}
+	}
+
+	main {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 1rem;
+		justify-content: center;
+		margin-inline: auto;
+		inline-size: min(1200px, 100cqw);
+
+		& :global(h1) {
+			width: 100cqi;
+		}
+
+		& :global(img) {
+			border-radius: 0.25rem;
+			display: block;
+			max-inline-size: 100%;
+			object-fit: cover;
+		}
+	}
+
+	footer {
+		display: flex;
+		font-size: 0.875rem;
+		gap: 0.5rem;
+		justify-content: center;
+		margin-block-start: auto;
+		padding-block-end: 2rem;
+
+		& a {
+			display: inline-block;
+			margin: 0;
+			padding: 0.5rem;
+		}
+	}
+</style>
+
+<style is:global>
+	.upload {
+		background: color-mix(in oklab, var(--orange-600), var(--bg) 95%);
+		border: 1px solid color-mix(in oklab, var(--orange-600), var(--bg) 40%);
+		border-radius: 0.5rem;
+		margin-block-end: 3rem;
+		padding: 1.5rem;
+		text-align: center;
+		width: 100cqi;
+	}
+
+	.gallery {
+		align-items: start;
+		display: grid;
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+		gap: 3rem;
+		justify-content: center;
+		min-block-size: 0;
+		min-inline-size: 0;
+	}
+
+	.example {
+		border: 1px solid color-mix(in oklch, var(--orange-600), transparent 60%);
+		border-radius: 0.5rem;
+		display: flex;
+		flex-direction: column;
+		inline-size: max-content;
+		justify-content: center;
+		max-inline-size: 200px;
+		padding: 1.5rem;
+		text-align: center;
+
+		&.double {
+			grid-column: 1 / 3;
+			margin-inline: auto;
+		}
+
+		& h3 {
+			font-size: 1.5rem;
+			margin: 0 0 0.25rem;
+		}
+
+		& img {
+			height: auto;
+			width: 200px;
+			margin-inline: auto;
+		}
+
+		&.double img {
+			inline-size: 300px;
+		}
+
+		& pre {
+			font-size: 0.875rem;
+			text-align: left;
+		}
+	}
+</style>

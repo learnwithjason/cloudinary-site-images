@@ -1,0 +1,89 @@
+---
+import { Image, Source } from '@unpic/astro';
+import { v2 as cloudinary, type TransformationOptions } from 'cloudinary';
+import Layout from '../layouts/default.astro';
+
+cloudinary.config({
+	cloud_name: import.meta.env.CLOUDINARY_CLOUD_NAME,
+	api_key: import.meta.env.CLOUDINARY_API_KEY,
+	api_secret: import.meta.env.CLOUDINARY_API_SECRET,
+});
+
+const public_id = 'cloudinary-images/tagging-test.jpg';
+const alt = 'Jason Lengstorf at his desk. He’s holding up the peace sign.';
+
+const base_transformations: Array<TransformationOptions> = [
+	{ quality: 'auto', format: 'auto' },
+	{
+		aspect_ratio: 1,
+		width: 600,
+		crop: 'thumb',
+		gravity: 'face',
+		zoom: 0.55,
+	},
+];
+
+const lightMode = cloudinary.url(public_id, {
+	transformation: [
+		...base_transformations,
+		{ overlay: 'cloudinary-images:image-frame-light' },
+		{ flags: 'layer_apply' },
+	],
+});
+
+const darkMode = cloudinary.url(public_id, {
+	transformation: [
+		...base_transformations,
+		{ overlay: 'cloudinary-images:image-frame-dark' },
+		{ flags: 'layer_apply' },
+	],
+});
+---
+
+<Layout>
+	<h1>03. Image Overlays</h1>
+
+	<div class="gallery">
+		<div class="example double">
+			<h3>Theme-Aware Version</h3>
+			<picture>
+				<Source
+					src={lightMode}
+					media="(prefers-color-scheme: light)"
+					width={300}
+					aspectRatio={1}
+				/>
+				<Source
+					src={darkMode}
+					media="(prefers-color-scheme: dark)"
+					width={300}
+					aspectRatio={1}
+				/>
+
+				<Image src={lightMode} alt={alt} class="banner" priority unstyled />
+			</picture>
+		</div>
+
+		<div class="example">
+			<h3>Light Mode Version</h3>
+			<Image
+				src={lightMode}
+				alt={alt}
+				width={400}
+				aspectRatio={1}
+				class="banner"
+			/>
+		</div>
+
+		<div class="example">
+			<h3>Dark Mode Version</h3>
+			<Image
+				src={darkMode}
+				alt={alt}
+				width={400}
+				aspectRatio={1}
+				class="banner"
+			/>
+		</div>
+	</div>
+</Layout>
