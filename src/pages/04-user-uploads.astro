@@ -1,9 +1,9 @@
 ---
 import { Image } from '@unpic/astro';
+import { v2 as cloudinary, type TransformationOptions } from 'cloudinary';
 import Layout from '../layouts/default.astro';
 
-// Cloudinary stuff
-import { v2 as cloudinary, type TransformationOptions } from 'cloudinary';
+export const prerender = false;
 
 cloudinary.config({
 	cloud_name: import.meta.env.CLOUDINARY_CLOUD_NAME,
