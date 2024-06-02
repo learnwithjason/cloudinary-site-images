@@ -31,7 +31,6 @@ const uploadStream = async (buffer: Uint8Array) => {
 					resolve(result);
 				},
 			)
-			// @ts-expect-error https://github.com/cloudinary/cloudinary_npm/issues/663
 			.end(buffer);
 	});
 };
