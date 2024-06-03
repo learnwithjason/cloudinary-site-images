@@ -34,6 +34,7 @@ const uploadStream = async (buffer: Uint8Array) => {
 let uploadedFile: any | undefined;
 let banner;
 let thumb;
+let public_id;
 let alt;
 
 if (Astro.request.method === 'POST') {
@@ -48,7 +49,7 @@ if (Astro.request.method === 'POST') {
 }
 
 if (uploadedFile && uploadedFile.public_id) {
-	const public_id = uploadedFile.public_id;
+	public_id = uploadedFile.public_id;
 	alt = uploadedFile.info?.detection?.captioning?.data?.caption ?? '';
 
 	const base_transformation: TransformationOptions = {
@@ -71,6 +72,15 @@ if (uploadedFile && uploadedFile.public_id) {
 
 <Layout>
 	<h1>04. User Uploads</h1>
+
+	{
+		uploadedFile ? (
+			<div class="success">
+				<h3>Upload Details</h3>
+				<pre>{JSON.stringify({ public_id, alt }, null, 2)}</pre>
+			</div>
+		) : null
+	}
 
 	<form method="post" enctype="multipart/form-data" class="upload">
 		<label for="file">Upload your photo:</label>
@@ -109,6 +119,8 @@ if (uploadedFile && uploadedFile.public_id) {
 	.uploads {
 		display: flex;
 		gap: 3rem;
+		inline-size: 100cqi;
+		justify-content: space-between;
 	}
 
 	.image {

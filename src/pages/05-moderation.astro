@@ -37,6 +37,7 @@ const uploadStream = async (buffer: Uint8Array) => {
 
 let uploadedFile: any | undefined;
 let moderationStatus;
+let public_id;
 let alt;
 
 if (Astro.request.method === 'POST') {
@@ -51,6 +52,7 @@ if (Astro.request.method === 'POST') {
 }
 
 if (uploadedFile && uploadedFile.public_id) {
+	public_id = uploadedFile.public_id;
 	alt = uploadedFile.info?.detection?.captioning?.data?.caption ?? '';
 
 	moderationStatus = uploadedFile.moderation.at(0).status;
@@ -87,6 +89,15 @@ const gallery = uploads.map((upload) => {
 		) : null
 	}
 
+	{
+		uploadedFile ? (
+			<div class="success">
+				<h3>Upload Details</h3>
+				<pre>{JSON.stringify({ public_id, alt }, null, 2)}</pre>
+			</div>
+		) : null
+	}
+
 	<form method="post" enctype="multipart/form-data" class="upload">
 		<label for="file">Upload your photo:</label>
 		<input type="file" name="file" id="file" required />
@@ -108,41 +119,21 @@ const gallery = uploads.map((upload) => {
 			))
 		}
 	</div>
-
-	{
-		uploadedFile ? (
-			<pre style="max-width: 100vw">
-				{JSON.stringify(uploadedFile, null, 2)}
-			</pre>
-		) : null
-	}
 </Layout>
 
 <style>
-	.error {
-		background: color-mix(in oklch, red, var(--bg) 92%);
-		border: 1px solid red;
-		border-radius: 0.25rem;
-		padding: 1.5rem;
-		text-align: center;
-		width: 100cqi;
-
-		& p {
-			margin: 0;
-		}
-	}
-
 	.uploads {
 		display: flex;
 		flex-wrap: wrap;
 		gap: 3rem;
+		inline-size: 100cqi;
 		justify-content: center;
 	}
 
 	.image {
 		border: 1px solid color-mix(in oklch, var(--orange-600), transparent 60%);
 		border-radius: 0.5rem;
-		max-inline-size: 150px;
+		max-inline-size: calc(150px + 3rem + 2px);
 		padding: 1.5rem;
 	}
 </style>

@@ -172,14 +172,22 @@ const nav = [
 </style>
 
 <style is:global>
+	* {
+		box-sizing: border-box;
+	}
+
 	.upload {
 		background: color-mix(in oklab, var(--orange-600), var(--bg) 95%);
 		border: 1px solid color-mix(in oklab, var(--orange-600), var(--bg) 40%);
 		border-radius: 0.5rem;
-		margin-block-end: 3rem;
+		margin-block-end: 1rem;
 		padding: 1.5rem;
 		text-align: center;
-		width: 100cqi;
+		inline-size: 100cqi;
+
+		div + & {
+			margin-block-start: 1rem;
+		}
 	}
 
 	.gallery {
@@ -199,7 +207,7 @@ const nav = [
 		flex-direction: column;
 		inline-size: max-content;
 		justify-content: center;
-		max-inline-size: 200px;
+		max-inline-size: calc(200px + 3rem + 2px);
 		padding: 1.5rem;
 		text-align: center;
 
@@ -214,18 +222,50 @@ const nav = [
 		}
 
 		& img {
-			height: auto;
-			width: 200px;
+			block-size: auto;
+			inline-size: 200px;
 			margin-inline: auto;
 		}
 
 		&.double img {
 			inline-size: 300px;
 		}
+	}
 
-		& pre {
-			font-size: 0.875rem;
+	:is(.error, .success) {
+		background: color-mix(in oklch, var(--color), var(--bg) 80%);
+		border: 1px solid var(--color);
+		border-radius: 0.5rem;
+		inline-size: 100cqi;
+		padding: 1.5rem;
+		text-align: center;
+
+		& :is(h3, p, pre) {
+			margin: 0;
+		}
+
+		& h3 {
+			inline-size: 100%;
+			margin-block: 0;
 			text-align: left;
 		}
+
+		pre {
+			font-size: 0.875rem;
+			inline-size: 100%;
+			margin: 0 auto;
+			overflow-x: scroll;
+			padding: 0.5rem 1.5rem;
+			text-align: left;
+			white-space: pre-wrap;
+		}
+	}
+
+	.error {
+		--color: red;
+	}
+
+	.success {
+		--color: green;
 	}
 </style>
