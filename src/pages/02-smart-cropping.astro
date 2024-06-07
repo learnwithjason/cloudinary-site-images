@@ -2,6 +2,7 @@
 import { v2 as cloudinary, type TransformationOptions } from 'cloudinary';
 import { Image } from '@unpic/astro';
 import Layout from '../layouts/default.astro';
+import { getImage } from 'astro:assets';
 
 cloudinary.config({
 	cloud_name: import.meta.env.CLOUDINARY_CLOUD_NAME,
@@ -9,69 +10,158 @@ cloudinary.config({
 	api_secret: import.meta.env.CLOUDINARY_API_SECRET,
 });
 
-const public_id = 'cloudinary-images/tagging-test.jpg';
-const alt = 'Jason Lengstorf at his desk. He’s holding up the peace sign.';
+const images = [
+	{
+		public_id: 'cloudinary-images/tucker-good-z-CMiXijUBo-unsplash',
+		alt: 'woman sitting outside the house beside dog',
+	},
+	{
+		public_id: 'cloudinary-images/rayan-mill-Apj_1ge5OfY-unsplash',
+		alt: 'man in black crew neck shirt carrying brown long coated small dog',
+	},
+	{
+		public_id: 'cloudinary-images/jorge-salvador-Y6GZ97S-mcY-unsplash',
+		alt: 'woman crouching with a white and black dog',
+	},
+	{
+		public_id: 'cloudinary-images/tadeusz-lakota-tk5LWGNiWVs-unsplash',
+		alt: 'man sitting beside black dog',
+	},
+	{
+		public_id: 'cloudinary-images/cristian-castillo-HcoOFfOH8S8-unsplash',
+		alt: 'man in blue dress shirt sitting beside brown dog during daytime',
+	},
+	{
+		public_id: 'cloudinary-images/jordan-koons--EMPljNoclg-unsplash',
+		alt: 'man carrying long-coated white dog',
+	},
+	{
+		public_id: 'cloudinary-images/cassiano-psomas-3v0Gm1oF_uM-unsplash',
+		alt: 'woman in yellow tank top sitting beside white short coated dog',
+	},
+	{
+		public_id: 'cloudinary-images/manuel-meza-KvKop_a_EXw-unsplash',
+		alt: 'woman playing with dog',
+	},
+	{
+		public_id: 'cloudinary-images/norbert-kundrak-iIVC1dKunZE-unsplash',
+		alt: 'woman wearing white top with a small white dog',
+	},
+];
 
-const base_transformation: TransformationOptions = {
-	quality: 'auto',
-	format: 'auto',
-};
+function getImageUrls(
+	images: Array<{ public_id: string; alt: string }>,
+	transform: {
+		crop: string;
+		gravity: string;
+		width?: number;
+		aspect_ratio?: number;
+	} = {
+		crop: 'auto',
+		gravity: 'auto',
+	},
+	sign_url: boolean = false,
+) {
+	return images.map((image) => ({
+		...image,
+		src: cloudinary.url(image.public_id, {
+			transformation: [{ quality: 'auto', format: 'auto', ...transform }],
+			sign_url,
+		}),
+	}));
+}
 
-const thumb = cloudinary.url(public_id, {
-	transformation: [
-		base_transformation,
-		{ crop: 'thumb', gravity: 'face:auto', zoom: 0.6 },
-	],
+const gallery_auto = getImageUrls(images);
+
+const gallery_thumb = getImageUrls(images, {
+	crop: 'thumb',
+	gravity: 'face:auto',
+	width: 400,
+	aspect_ratio: 1,
 });
 
-const portrait = cloudinary.url(public_id, {
-	transformation: [base_transformation, { crop: 'fill', gravity: 'face:auto' }],
-});
+const gallery_pet = getImageUrls(
+	images,
+	{
+		crop: 'auto',
+		gravity: 'dog:auto',
+		width: 400,
+		aspect_ratio: 1,
+	},
+	true,
+);
 
-const lamp = cloudinary.url(public_id, {
-	transformation: [
-		base_transformation,
-		{ aspect_ratio: 1, width: 400, crop: 'auto', gravity: 'auto:lamp' },
-	],
-	sign_url: true,
-});
+// const thumb = cloudinary.url(public_id, {
+// 	transformation: [
+// 		base_transformation,
+// 		{ crop: 'thumb', gravity: 'face:auto', zoom: 0.6 },
+// 	],
+// });
+
+// const portrait = cloudinary.url(public_id, {
+// 	transformation: [base_transformation, { crop: 'fill', gravity: 'face:auto' }],
+// });
+
+// const lamp = cloudinary.url(public_id, {
+// 	transformation: [
+// 		base_transformation,
+// 		{ aspect_ratio: 1, width: 400, crop: 'auto', gravity: 'auto:lamp' },
+// 	],
+// 	sign_url: true,
+// });
 ---
 
 <Layout>
 	<h1>02. Smart Cropping</h1>
 
+	<h2>Images with automatic cropping</h2>
 	<div class="gallery">
-		<div class="example">
-			<h3>Thumb</h3>
-			<Image src={thumb} alt={alt} width={400} aspectRatio={1} class="thumb" />
-			<pre><code>crop: 'thumb',
-gravity: 'face:auto'</code></pre>
-		</div>
+		{
+			gallery_auto.map(({ src, alt }) => (
+				<div class="example">
+					<Image src={src} alt={alt} height={400} width={400} class="thumb" />
+				</div>
+			))
+		}
+	</div>
 
-		<div class="example">
-			<h3>Portrait</h3>
-			<Image
-				src={portrait}
-				alt={alt}
-				width={300}
-				height={400}
-				class="portrait"
-			/>
-			<pre><code>crop: 'fill',
-gravity: 'face:auto'</code></pre>
-		</div>
+	<h2>Images with thumb cropping</h2>
+	<div class="gallery">
+		{
+			gallery_thumb.map(({ src, alt }) => (
+				<div class="example">
+					<Image src={src} alt={alt} height={400} width={400} class="thumb" />
+				</div>
+			))
+		}
+	</div>
 
-		<div class="example">
-			<h3>Smart Crop</h3>
-			<img src={lamp} alt={alt} class="thumb" />
-			<pre><code>crop: 'auto',
-gravity: 'auto:lamp'</code></pre>
-		</div>
+	<h2>Images with smart cropping for dogs</h2>
+	<div class="gallery">
+		{
+			gallery_pet.map(({ src, alt }) => (
+				<div class="example">
+					{/* can't use Unpic because of signed URLs */}
+					<img src={src} alt={alt} class="thumb" />
+				</div>
+			))
+		}
 	</div>
 </Layout>
 
 <style>
+	h2 {
+		inline-size: 100cqi;
+		margin-block: 2rem 0;
+		text-align: center;
+	}
 	.gallery {
+		gap: 1rem;
 		grid-template-columns: repeat(3, minmax(0, 1fr));
+	}
+
+	.example {
+		inline-size: 200px;
+		padding: 0;
 	}
 </style>

@@ -1,7 +1,9 @@
 ---
 import { v2 as cloudinary } from 'cloudinary';
 import { Image } from '@unpic/astro';
+import { Image as AstroImage } from 'astro:assets';
 import Layout from '../layouts/default.astro';
+import jasonImg from '../images/jason.jpg';
 
 cloudinary.config({
 	cloud_name: import.meta.env.CLOUDINARY_CLOUD_NAME,
@@ -15,11 +17,25 @@ const banner = cloudinary.url('cloudinary-images/jason.jpg');
 <Layout>
 	<h1>01. Basic</h1>
 
+	<h2>Built-in Astro image handling</h2>
+
+	<AstroImage
+		src={jasonImg}
+		alt="Jason Lengstorf at his desk. He’s holding up the peace sign."
+		width={1200}
+		height={675}
+		widths={[300, 550, 1100, 2200]}
+		class="banner"
+	/>
+
+	<h2>Cloudinary + Unpic image handling</h2>
+
 	<Image
 		src={banner}
 		alt="Jason Lengstorf at his desk. He’s holding up the peace sign."
 		width={1200}
 		height={675}
 		class="banner"
+		placeholder="blurhash"
 	/>
 </Layout>

@@ -1,4 +1,4 @@
-import { imageService } from '@unpic/astro/service';
+// import { imageService } from '@unpic/astro/service';
 import { defineConfig } from 'astro/config';
 import db from '@astrojs/db';
 import netlify from '@astrojs/netlify';
@@ -7,7 +7,8 @@ import netlify from '@astrojs/netlify';
 export default defineConfig({
 	output: 'hybrid',
 	image: {
-		service: imageService(),
+		domains: ['res.cloudinary.com'],
+		// service: imageService(),
 	},
 	integrations: [db()],
 	adapter: netlify(),
