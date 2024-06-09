@@ -1,7 +1,5 @@
 ---
 import { v2 as cloudinary } from 'cloudinary';
-import { Image } from '@unpic/astro';
-import { db, Upload } from 'astro:db';
 import Layout from '../layouts/default.astro';
 
 export const prerender = false;
@@ -12,128 +10,47 @@ cloudinary.config({
 	api_secret: import.meta.env.CLOUDINARY_API_SECRET,
 });
 
-// https://github.com/cloudinary-community/cloudinary-examples/blob/main/examples/astro-form-upload/src/pages/upload.astro
-const uploadStream = async (buffer: Uint8Array) => {
+async function uploadImage(img: File) {
+	const arrayBuffer = await img.arrayBuffer();
+	const uint8Array = new Uint8Array(arrayBuffer);
+
 	return new Promise((resolve, reject) => {
 		cloudinary.uploader
 			.upload_stream(
 				{
-					folder: 'cloudinary-images',
+					// optional, but nice for keeping uploads grouped
+					folder: 'cloudinary-images/uploads',
 
 					// use auto-captioning to get alt text for user uploads
 					detection: 'captioning',
 
-					// add moderation in case bad actors decide to be weirdos
-					moderation: 'aws_rek:suggestive:ignore',
+					// update the asset to include the generated caption
+					on_success:
+						'current_asset.update({ context: { alt: e.upload_info?.info?.detection?.captioning?.data?.caption } })',
 				},
 				(error, result) => {
 					if (error) return reject(error);
 					resolve(result);
 				},
 			)
-			.end(buffer);
+			.end(uint8Array);
 	});
-};
+}
 
-let uploadedFile: any | undefined;
-let moderationStatus;
-let public_id;
-let alt;
+let uploadedFile: any;
 
 if (Astro.request.method === 'POST') {
 	const data = await Astro.request.formData();
+	const img = data.get('file') as File;
 
-	const file = data.get('file') as File;
-
-	const arrayBuffer = await file.arrayBuffer();
-	const uint8Array = new Uint8Array(arrayBuffer);
-
-	uploadedFile = await uploadStream(uint8Array);
+	uploadedFile = await uploadImage(img);
 }
-
-if (uploadedFile && uploadedFile.public_id) {
-	public_id = uploadedFile.public_id;
-	alt = uploadedFile.info?.detection?.captioning?.data?.caption ?? '';
-
-	moderationStatus = uploadedFile.moderation.at(0).status;
-
-	if (moderationStatus === 'approved') {
-		await db.insert(Upload).values({ public_id: uploadedFile.public_id, alt });
-	}
-}
-
-const uploads = await db.select().from(Upload);
-const gallery = uploads.map((upload) => {
-	const src = cloudinary.url(upload.public_id, {
-		transformation: [
-			{ quality: 'auto', format: 'auto' },
-			{ crop: 'thumb', gravity: 'face:auto' },
-		],
-	});
-
-	return { src, alt: upload.alt };
-});
 ---
 
 <Layout>
-	<h1>05. Moderation</h1>
-
-	{
-		moderationStatus === 'rejected' ? (
-			<div class="error">
-				<p>
-					The uploaded image was flagged as potentially inappropriate. Please
-					try another image.
-				</p>
-			</div>
-		) : null
-	}
-
-	{
-		uploadedFile ? (
-			<div class="success">
-				<h3>Upload Details</h3>
-				<pre>{JSON.stringify({ public_id, alt }, null, 2)}</pre>
-			</div>
-		) : null
-	}
-
 	<form method="post" enctype="multipart/form-data" class="upload">
 		<label for="file">Upload your photo:</label>
-		<input type="file" name="file" id="file" required />
+		<input type="file" name="file" id="file" accept="image/*" required />
 		<button>Submit</button>
 	</form>
-
-	<div class="uploads">
-		{
-			gallery.map(({ src, alt }) => (
-				<div class="image">
-					<Image
-						src={src}
-						alt={alt}
-						height={300}
-						aspectRatio={1}
-						class="thumb"
-					/>
-				</div>
-			))
-		}
-	</div>
 </Layout>
-
-<style>
-	.uploads {
-		display: flex;
-		flex-wrap: wrap;
-		gap: 3rem;
-		inline-size: 100cqi;
-		justify-content: center;
-	}
-
-	.image {
-		border: 1px solid color-mix(in oklch, var(--orange-600), transparent 60%);
-		border-radius: 0.5rem;
-		max-inline-size: calc(150px + 3rem + 2px);
-		padding: 1.5rem;
-	}
-</style>
