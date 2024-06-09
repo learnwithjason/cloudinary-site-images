@@ -1,7 +1,25 @@
 ---
+import { v2 as cloudinary } from 'cloudinary';
+import { Image } from '@unpic/astro';
 import Layout from '../layouts/default.astro';
+
+cloudinary.config({
+	cloud_name: import.meta.env.CLOUDINARY_CLOUD_NAME,
+});
+
+const cdnImg = cloudinary.url(
+	'cloudinary-images/karsten-winegeart-F1PDaeAyr1A-unsplash',
+	{ transformation: { quality: 'auto', format: 'auto' } },
+);
 ---
 
 <Layout>
-	<p>TODO: add images</p>
+	<Image
+		src={cdnImg}
+		alt="A French bulldog in an orange hoodie against a blue background."
+		width={1200}
+		height={800}
+		class="banner"
+		placeholder="blurhash"
+	/>
 </Layout>
