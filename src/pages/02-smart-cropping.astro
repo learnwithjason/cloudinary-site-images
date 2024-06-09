@@ -1,17 +1,66 @@
 ---
+import { v2 as cloudinary } from 'cloudinary';
 import Layout from '../layouts/default.astro';
 
-// TODO upload images to Cloudinary and add their details to this array
+cloudinary.config({
+	cloud_name: import.meta.env.CLOUDINARY_CLOUD_NAME,
+	api_key: import.meta.env.CLOUDINARY_API_KEY,
+	api_secret: import.meta.env.CLOUDINARY_API_SECRET,
+});
+
 const images = [
 	{
 		public_id: 'cloudinary-images/gallery/tucker-good-z-CMiXijUBo-unsplash',
 		alt: 'woman sitting outside the house beside dog',
 	},
+	{
+		public_id: 'cloudinary-images/gallery/rayan-mill-Apj_1ge5OfY-unsplash',
+		alt: 'man in black crew neck shirt carrying brown long coated small dog',
+	},
+	{
+		public_id: 'cloudinary-images/gallery/jorge-salvador-Y6GZ97S-mcY-unsplash',
+		alt: 'woman crouching with a white and black dog',
+	},
+	{
+		public_id: 'cloudinary-images/gallery/tadeusz-lakota-tk5LWGNiWVs-unsplash',
+		alt: 'man sitting beside black dog',
+	},
+	{
+		public_id:
+			'cloudinary-images/gallery/cristian-castillo-HcoOFfOH8S8-unsplash',
+		alt: 'man in blue dress shirt sitting beside brown dog during daytime',
+	},
+	{
+		public_id: 'cloudinary-images/gallery/jordan-koons--EMPljNoclg-unsplash',
+		alt: 'man carrying long-coated white dog',
+	},
+	{
+		public_id: 'cloudinary-images/gallery/cassiano-psomas-3v0Gm1oF_uM-unsplash',
+		alt: 'woman in yellow tank top sitting beside white short coated dog',
+	},
+	{
+		public_id: 'cloudinary-images/gallery/manuel-meza-KvKop_a_EXw-unsplash',
+		alt: 'woman playing with dog',
+	},
+	{
+		public_id: 'cloudinary-images/gallery/norbert-kundrak-iIVC1dKunZE-unsplash',
+		alt: 'woman wearing white top with a small white dog',
+	},
 ];
 
 const gallery = images.map(({ public_id, alt }) => {
 	return {
-		src: '', // TODO generate a Cloudinary URL
+		src: cloudinary.url(public_id, {
+			transformation: {
+				quality: 'auto',
+				format: 'auto',
+				height: 400,
+				width: 400,
+				crop: 'auto',
+				gravity: 'dog:auto',
+			},
+			sign_url: true,
+		}),
 		alt,
 	};
 });
@@ -22,7 +71,15 @@ const gallery = images.map(({ public_id, alt }) => {
 		{
 			gallery.map(({ src, alt }) => (
 				<div class="example">
-					<p>TODO: display the image</p>
+					<img
+						src={src}
+						alt={alt}
+						height={200}
+						width={200}
+						loading="lazy"
+						decoding="async"
+						class="thumb"
+					/>
 				</div>
 			))
 		}
