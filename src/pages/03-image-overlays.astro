@@ -1,7 +1,53 @@
 ---
+import { Image, Source } from '@unpic/astro';
+import { v2 as cloudinary } from 'cloudinary';
 import Layout from '../layouts/default.astro';
+
+cloudinary.config({
+	cloud_name: import.meta.env.CLOUDINARY_CLOUD_NAME,
+});
+
+const public_id =
+	'cloudinary-images/karsten-winegeart-F1PDaeAyr1A-unsplash.jpg';
+const alt = 'A French bulldog in an orange hoodie against a blue background.';
+
+function getImageWithOverlay(mode: 'light' | 'dark' = 'light') {
+	return cloudinary.url(public_id, {
+		transformation: [
+			{ quality: 'auto', format: 'auto' },
+			{
+				aspect_ratio: 1,
+				width: 600,
+				crop: 'auto',
+				gravity: 'auto',
+			},
+			// make sure the light/dark public IDs are set
+			// properly based on the `mode` setting
+			{ overlay: `cloudinary-images:image-frame-${mode}` },
+			{ flags: 'layer_apply' },
+		],
+	});
+}
+
+const lightMode = getImageWithOverlay('light');
+const darkMode = getImageWithOverlay('dark');
 ---
 
 <Layout>
-	<p>TODO: display a theme-aware image</p>
+	<picture>
+		<Source
+			src={lightMode}
+			media="(prefers-color-scheme: light)"
+			width={400}
+			aspectRatio={1}
+		/>
+		<Source
+			src={darkMode}
+			media="(prefers-color-scheme: dark)"
+			width={400}
+			aspectRatio={1}
+		/>
+
+		<Image src={lightMode} alt={alt} class="banner" priority unstyled />
+	</picture>
 </Layout>
