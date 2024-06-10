@@ -1,9 +1,72 @@
 ---
+import { Image } from '@unpic/astro';
+import { v2 as cloudinary } from 'cloudinary';
 import Layout from '../layouts/default.astro';
 
 export const prerender = false;
+
+cloudinary.config({
+	cloud_name: import.meta.env.CLOUDINARY_CLOUD_NAME,
+	api_key: import.meta.env.CLOUDINARY_API_KEY,
+	api_secret: import.meta.env.CLOUDINARY_API_SECRET,
+});
+
+async function uploadImage(img: File) {
+	const arrayBuffer = await img.arrayBuffer();
+	const uint8Array = new Uint8Array(arrayBuffer);
+
+	return new Promise((resolve, reject) => {
+		cloudinary.uploader
+			.upload_stream(
+				{
+					// optional, but nice for keeping uploads grouped
+					folder: 'cloudinary-images/uploads',
+
+					// use auto-captioning to get alt text for user uploads
+					detection: 'lvis_v1,captioning',
+
+					// add detected categories with >= 60% confidence
+					auto_tagging: 0.6,
+
+					// update the asset to include the generated caption
+					on_success:
+						'current_asset.update({ context: { alt: e.upload_info?.info?.detection?.captioning?.data?.caption } })',
+				},
+				(error, result) => {
+					if (error) return reject(error);
+					resolve(result);
+				},
+			)
+			.end(uint8Array);
+	});
+}
+
+let uploadedFile: any;
+
+if (Astro.request.method === 'POST') {
+	const data = await Astro.request.formData();
+	const img = data.get('file') as File;
+
+	uploadedFile = await uploadImage(img);
+}
 ---
 
 <Layout>
-	<p>TODO: create a user upload form</p>
+	{
+		uploadedFile ? (
+			<Image
+				src={uploadedFile.secure_url}
+				alt={uploadedFile.context.custom.alt}
+				height={1100}
+				aspectRatio={16 / 9}
+				class="banner"
+			/>
+		) : null
+	}
+
+	<form method="post" enctype="multipart/form-data" class="upload">
+		<label for="file">Upload your photo:</label>
+		<input type="file" name="file" id="file" accept="image/*" required />
+		<button>Submit</button>
+	</form>
 </Layout>
