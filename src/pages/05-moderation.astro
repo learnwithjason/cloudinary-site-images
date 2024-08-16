@@ -1,5 +1,7 @@
 ---
 import { v2 as cloudinary } from 'cloudinary';
+import { db, Upload } from 'astro:db';
+import { Image } from '@unpic/astro';
 import Layout from '../layouts/default.astro';
 
 export const prerender = false;
@@ -23,6 +25,7 @@ async function uploadImage(img: File) {
 
 					// use auto-captioning to get alt text for user uploads
 					detection: 'captioning',
+					moderation: 'aws_rek:suggestive:ignore',
 
 					// update the asset to include the generated caption
 					on_success:
@@ -38,6 +41,7 @@ async function uploadImage(img: File) {
 }
 
 let uploadedFile: any;
+let moderation: { status: string; message: string } | undefined;
 
 if (Astro.request.method === 'POST') {
 	const data = await Astro.request.formData();
@@ -45,12 +49,61 @@ if (Astro.request.method === 'POST') {
 
 	uploadedFile = await uploadImage(img);
 }
+
+if (uploadedFile) {
+	type ModerationStatus = 'approved' | 'pending' | 'rejected';
+	const status = uploadedFile.moderation.at(0).status as ModerationStatus;
+	const moderationMessages = {
+		approved: 'Thanks! Your image was successfully uploaded.',
+		pending: 'Your image was uploaded and will be reviewed by our moderators.',
+		rejected: 'The uploaded image was flagged as potentially inappropriate.',
+	};
+
+	moderation = {
+		status,
+		message: moderationMessages[status],
+	};
+
+	if (status === 'approved') {
+		await db.insert(Upload).values({
+			public_id: uploadedFile.public_id,
+			alt: uploadedFile.context.custom.alt,
+		});
+	}
+}
+
+const uploads = await db.select().from(Upload);
+const gallery = uploads.map((upload) => {
+	const src = cloudinary.url(upload.public_id, {
+		transformation: [
+			{ quality: 'auto', format: 'auto', crop: 'auto', gravity: 'auto' },
+		],
+	});
+
+	return { src, alt: upload.alt };
+});
 ---
 
 <Layout>
+	{
+		moderation ? (
+			<div class={moderation.status}>
+				<p>{moderation.message}</p>
+			</div>
+		) : null
+	}
+
 	<form method="post" enctype="multipart/form-data" class="upload">
 		<label for="file">Upload your photo:</label>
 		<input type="file" name="file" id="file" accept="image/*" required />
 		<button>Submit</button>
 	</form>
+
+	<div class="uploads">
+		{
+			gallery.map(({ src, alt }) => (
+				<Image src={src} alt={alt} height={400} aspectRatio={1} />
+			))
+		}
+	</div>
 </Layout>
